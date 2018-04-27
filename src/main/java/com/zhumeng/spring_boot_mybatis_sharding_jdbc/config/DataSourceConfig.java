@@ -81,15 +81,22 @@ public class DataSourceConfig {
     @Bean
     public ShardingRule shardingRule(DataSourceRule dataSourceRule){
         //具体分库分表策略
+    	//按订单id 分表
         TableRule orderTableRule = TableRule.builder("t_order")
                 .actualTables(Arrays.asList("t_order_0", "t_order_1"))
                 .tableShardingStrategy(new TableShardingStrategy("order_id", new ModuloTableShardingAlgorithm()))
                 .dataSourceRule(dataSourceRule)
                 .build();
-
+      //按订单id 分表
+        TableRule orderItemTableRule = TableRule.builder("t_order_item")
+        		.actualTables(Arrays.asList("t_order_item_0", "t_order_item_1"))
+        		.tableShardingStrategy(new TableShardingStrategy("order_id", new ModuloTableShardingAlgorithm()))
+                .dataSourceRule(dataSourceRule)
+                .build();
+        //按用户Id 分库
         //绑定表策略，在查询时会使用主表策略计算路由的数据源，因此需要约定绑定表策略的表的规则需要一致，可以一定程度提高效率
         List<BindingTableRule> bindingTableRules = new ArrayList<BindingTableRule>();
-        bindingTableRules.add(new BindingTableRule(Arrays.asList(orderTableRule)));
+        bindingTableRules.add(new BindingTableRule(Arrays.asList(orderTableRule,orderItemTableRule)));
         return ShardingRule.builder()
                 .dataSourceRule(dataSourceRule)
                 .tableRules(Arrays.asList(orderTableRule))
